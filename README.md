@@ -99,6 +99,8 @@ Set your OpenAI API key  by updating the configuration file `config/llm_env.yml`
 
 - We recommend using [OpenAI's GPT-4](https://platform.openai.com/docs/guides/gpt) for the LLM. Our framework also supports other providers and open-source models, as discussed [here](docs/installation.md#configure-your-llm).
 
+- **Open-source alternative:** You can use the **Llama 3.2** model (`unsloth/Llama-3.2-3B-Instruct`) instead of OpenAI — no API key required. See the [Open-Source Llama 3.2 Setup](#open-source-llama-32-setup) section below.
+
 <br />
 
 > **Step 4** - Configure your Annotator
@@ -200,6 +202,47 @@ Enjoy the results. Completion of these steps yields a **refined (calibrated)
 prompt** tailored for your task, alongside a **benchmark** featuring challenging samples,
 stored in the default `dump` path.
 
+
+## Open-Source Llama 3.2 Setup
+
+You can run AutoPrompt entirely with the open-source **unsloth/Llama-3.2-3B-Instruct** model — no API keys required.
+
+### Google Colab (Recommended)
+
+Open the provided notebook for a one-click setup:
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/joysontelem/AutoPrompt/blob/main/AutoPrompt_Llama.ipynb)
+
+**Requirements:** Google Colab with a T4 GPU runtime (free tier).
+
+### Local Setup
+
+1. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+2. Run the classification pipeline with Llama 3.2:
+```bash
+python run_pipeline.py \
+    --basic_config_path config/config_llama.yml \
+    --prompt "Does this movie review contain a spoiler? answer Yes or No" \
+    --task_description "Classify whether a movie review contains spoilers." \
+    --num_steps 5
+```
+
+3. Or run benchmark optimization:
+```bash
+python run_benchmark_optimization.py \
+    --config config/config_llama.yml \
+    --dataset path/to/your_data.csv \
+    --prompt "Is this movie review positive? Answer Yes or No." \
+    --task_description "Classify movie reviews as positive or negative." \
+    --labels Yes No \
+    --num_steps 5
+```
+
+The Llama configuration (`config/config_llama.yml`) uses `device_map: 'auto'` to automatically place the model on available GPU(s). On machines without a GPU, it falls back to CPU (much slower).
 
 
 ## Tips

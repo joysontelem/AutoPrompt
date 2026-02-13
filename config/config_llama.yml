@@ -1,0 +1,66 @@
+use_wandb: False
+dataset:
+    name: 'dataset'
+    records_path: null
+    initial_dataset: ''
+    label_schema: ["Yes", "No"]
+    max_samples: 50
+    semantic_sampling: False
+
+annotator:
+    method : 'llm'
+    config:
+        llm:
+            type: 'HuggingFacePipeline'
+            name: 'unsloth/Llama-3.2-3B-Instruct'
+            chat_model: True
+            max_new_tokens: 1024
+            device_map: 'auto'
+        num_workers: 1
+        prompt: 'prompts/predictor/prediction.prompt'
+        mini_batch_size: 1
+        mode: 'annotation'
+
+predictor:
+    method : 'llm'
+    config:
+        llm:
+            type: 'HuggingFacePipeline'
+            name: 'unsloth/Llama-3.2-3B-Instruct'
+            chat_model: True
+            max_new_tokens: 1024
+            device_map: 'auto'
+        num_workers: 1
+        prompt: 'prompts/predictor_completion/prediction.prompt'
+        mini_batch_size: 1
+        mode: 'prediction'
+
+meta_prompts:
+    folder: 'prompts/meta_prompts_classification'
+    num_err_prompt: 1
+    num_err_samples: 2
+    history_length: 4
+    num_generated_samples: 10
+    num_initialize_samples: 10
+    samples_generation_batch: 10
+    num_workers: 1
+    warmup: 4
+
+eval:
+    function_name: 'accuracy'
+    num_large_errors: 4
+    num_boundary_predictions : 0
+    error_threshold: 0.5
+
+llm:
+    name: 'unsloth/Llama-3.2-3B-Instruct'
+    type: 'HuggingFacePipeline'
+    chat_model: True
+    max_new_tokens: 2048
+    device_map: 'auto'
+    temperature: 0.8
+
+stop_criteria:
+    max_usage: 0 # Set to 0 to disable cost-based stopping (no API cost for local models)
+    patience: 10
+    min_delta: 0.01

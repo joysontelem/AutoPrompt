@@ -3,7 +3,11 @@ from easydict import EasyDict as edict
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from pathlib import Path
-from langchain.llms.huggingface_pipeline import HuggingFacePipeline
+try:
+    from langchain_huggingface import HuggingFacePipeline, ChatHuggingFace
+except ImportError:
+    from langchain.llms.huggingface_pipeline import HuggingFacePipeline
+    ChatHuggingFace = None
 from langchain_openai.chat_models import AzureChatOpenAI
 from langchain.chains import LLMChain
 import logging
@@ -69,14 +73,31 @@ def get_llm(config: dict):
     elif config['type'].lower() == 'huggingfacepipeline':
         device = config.get('gpu_device', -1)
         device_map = config.get('device_map', None)
+        max_new_tokens = config.get('max_new_tokens', 1024)
 
-        return HuggingFacePipeline.from_model_id(
-            model_id=config['name'],
-            task="text-generation",
-            pipeline_kwargs={"max_new_tokens": config['max_new_tokens']},
-            device=device,
-            device_map=device_map
-        )
+        pipeline_kwargs = {"max_new_tokens": max_new_tokens}
+        model_kwargs = {}
+        if device_map is not None:
+            model_kwargs["device_map"] = device_map
+            llm = HuggingFacePipeline.from_model_id(
+                model_id=config['name'],
+                task="text-generation",
+                pipeline_kwargs=pipeline_kwargs,
+                model_kwargs=model_kwargs
+            )
+        else:
+            llm = HuggingFacePipeline.from_model_id(
+                model_id=config['name'],
+                task="text-generation",
+                pipeline_kwargs=pipeline_kwargs,
+                device=device
+            )
+
+        if config.get('chat_model', False) and ChatHuggingFace is not None:
+            return ChatHuggingFace(llm=llm, tokenizer=llm.pipeline.tokenizer)
+        if config.get('chat_model', False) and ChatHuggingFace is None:
+            logging.warning('ChatHuggingFace is not available. Install langchain-huggingface for chat model support. Falling back to base HuggingFacePipeline.')
+        return llm
     else:
         raise NotImplementedError("LLM not implemented")
 
