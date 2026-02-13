@@ -95,6 +95,8 @@ def get_llm(config: dict):
 
         if config.get('chat_model', False) and ChatHuggingFace is not None:
             return ChatHuggingFace(llm=llm, tokenizer=llm.pipeline.tokenizer)
+        if config.get('chat_model', False) and ChatHuggingFace is None:
+            logging.warning('ChatHuggingFace is not available. Install langchain-huggingface for chat model support. Falling back to base HuggingFacePipeline.')
         return llm
     else:
         raise NotImplementedError("LLM not implemented")
