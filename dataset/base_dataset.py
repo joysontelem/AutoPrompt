@@ -33,5 +33,5 @@ class DatasetBase:
         self.records.update(records)
 
         # Remove discarded annotations
-        self.records = self.records.loc[self.records["annotation"] != "Discarded"]
+        self.records = self.records.loc[self.records["annotation"].fillna("") != "Discarded"]
         self.records.reset_index(inplace=True)

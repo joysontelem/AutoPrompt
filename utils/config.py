@@ -1,10 +1,11 @@
+import logging
+from pathlib import Path
+
 import yaml
 from easydict import EasyDict as edict
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_openai.chat_models import AzureChatOpenAI
-from pathlib import Path
-import logging
 
 LLM_ENV = yaml.safe_load(open('config/llm_env.yml', 'r'))
 
